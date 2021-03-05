@@ -198,3 +198,14 @@ AS $$
   return id_a.intersects(id_b)
 $$ LANGUAGE plpython3u IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION s2_region_coverer(lat1 double precision, lng1 double precision, lat2 double precision, lng2 double precision) RETURNS SETOF text
+AS $$
+	import s2sphere
+	r = s2sphere.RegionCoverer()
+	p1 = s2sphere.LatLng.from_degrees(lat1, lng1)
+	p2 = s2sphere.LatLng.from_degrees(lat2, lng2)
+	cell_ids = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
+
+	for cell_id in cell_ids:
+		yield cell_id.to_token()
+$$ LANGUAGE plpython3u IMMUTABLE STRICT;
