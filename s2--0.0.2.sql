@@ -209,3 +209,22 @@ AS $$
 	for cell_id in cell_ids:
 		yield cell_id.to_token()
 $$ LANGUAGE plpython3u IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION corners_from_cellid(cellid bigint) RETURNS setof text
+AS $$
+    import s2sphere
+    from s2sphere import CellId, LatLng, Cell
+
+    id = s2sphere.CellId(int.from_bytes(cellid.to_bytes(8, 'big', signed=True), 'big', signed=False))
+    c1 = Cell(id)
+
+    v0 = LatLng.from_point(c1.get_vertex(0)) # lat/lon of upper/left corner
+    v1 = LatLng.from_point(c1.get_vertex(1)) # lat/lon of lower/left corner
+    v2 = LatLng.from_point(c1.get_vertex(2)) # lat/lon of lower/right corner
+    v3 = LatLng.from_point(c1.get_vertex(3)) # lat/lon of upper/right corner
+
+    yield v0
+    yield v1
+    yield v2
+    yield v3
+$$ LANGUAGE plpython3u IMMUTABLE STRICT;
