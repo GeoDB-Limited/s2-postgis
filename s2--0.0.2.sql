@@ -213,8 +213,6 @@ $$ LANGUAGE plpython3u IMMUTABLE STRICT;
 
 CREATE TYPE point AS (lat double precision, lng double precision);
 
-
-drop function corners_from_cellid;
 CREATE OR REPLACE FUNCTION corners_from_cellid(cellid bigint) RETURNS text
 AS $$
     import s2sphere
