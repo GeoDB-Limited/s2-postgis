@@ -210,7 +210,12 @@ AS $$
 		yield cell_id.to_token()
 $$ LANGUAGE plpython3u IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION corners_from_cellid(cellid bigint) RETURNS setof text
+
+CREATE TYPE point AS (lat double precision, lng double precision);
+
+
+drop function corners_from_cellid;
+CREATE OR REPLACE FUNCTION corners_from_cellid(cellid bigint) RETURNS text
 AS $$
     import s2sphere
     from s2sphere import CellId, LatLng, Cell
@@ -223,8 +228,10 @@ AS $$
     v2 = LatLng.from_point(c1.get_vertex(2)) # lat/lon of lower/right corner
     v3 = LatLng.from_point(c1.get_vertex(3)) # lat/lon of upper/right corner
 
-    yield v0
-    yield v1
-    yield v2
-    yield v3
+    return "SRID=4326;POLYGON(("+str(v0.lng().degrees)+" "+str(v0.lat().degrees)+","+str(v1.lng().degrees)+" "+str(v1.lat().degrees)+","+str(v2.lng().degrees)+" "+str(v2.lat().degrees)+","+str(v3.lng().degrees)+" "+str(v3.lat().degrees)+","+str(v0.lng().degrees)+" "+str(v0.lat().degrees)+"))"
+
 $$ LANGUAGE plpython3u IMMUTABLE STRICT;
+
+
+-- select ST_GeomFromEWKT(corners_from_cellid(s2_cellid_from_token('3a27064')));
+
